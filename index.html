@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizBell - 최종 완전판</title>
+    <title>QuizBell</title>
     <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
     
     <style>
@@ -285,14 +285,14 @@
         }
 
         function deleteAdminAccount() {
-            if(confirm("⚠️ 정말 탈퇴할 거야? 탈퇴하면 여태 만든 퀴즈, 그룹, 참가자 계정이 전부 공중분해 돼!")) {
+            if(confirm("⚠️ 정말로 탈퇴하실건가요? 탈퇴하면 퀴즈, 그룹, 참가자 계정이 전부 사라집니다.")) {
                 if(confirm("마지막 확인! 정말 모든 데이터를 삭제하고 탈퇴하겠습니까?")) {
                     localStorage.clear(); 
                     adminAccount = { id: 'admin', pw: '1234' };
                     groups = [];
                     quizzes = [];
                     globalQuizCode = '777999';
-                    alert("관리자 회원 탈퇴 및 데이터 리셋이 완료되었어.");
+                    alert("관리자 회원 탈퇴 및 데이터 리셋이 완료되었습니다.");
                     showPage('page-login');
                     location.reload();
                 }
@@ -300,7 +300,7 @@
         }
 
         function deleteQuiz(index) {
-            if(confirm(`"${quizzes[index].title}" 퀴즈를 삭제할까? 복구는 불가능해!`)) {
+            if(confirm(`"${quizzes[index].title}" 퀴즈를 삭제할까요? 복구는 불가능합니다.`)) {
                 quizzes.splice(index, 1);
                 localStorage.setItem('quizzes', JSON.stringify(quizzes));
                 renderQuizzes();
@@ -414,7 +414,7 @@
         function renderQuizzes() {
             const list = document.getElementById('quizList'); list.innerHTML = '';
             if(quizzes.length === 0) {
-                list.innerHTML = '<p style="color:#aaa; text-align:center; padding:10px;">생성된 퀴즈가 없어.</p>';
+                list.innerHTML = '<p style="color:#aaa; text-align:center; padding:10px;">생성된 퀴즈가 없습니다.</p>';
                 return;
             }
             quizzes.forEach((quiz, index) => {
@@ -488,7 +488,7 @@
 
         function sendSignalStartGame() {
             let session = JSON.parse(localStorage.getItem('quizSession'));
-            if(!session || session.players.length === 0) return alert('아직 대기방에 들어온 참가자가 없어!');
+            if(!session || session.players.length === 0) return alert('아직 대기방에 들어온 참가자가 없습니다.');
             
             session.status = 'playing';
             localStorage.setItem('quizSession', JSON.stringify(session));
@@ -507,7 +507,7 @@
             let session = JSON.parse(localStorage.getItem('quizSession'));
             
             if(code === globalQuizCode) {
-                if(!session) return alert('관리자가 퀴즈를 아직 시작(활성화)하지 않았어!');
+                if(!session) return alert('관리자가 퀴즈를 아직 시작(활성화)하지 않았습니다.');
                 showPage('page-user-wait');
             } else { 
                 alert(`코드 번호 오류! 현재 설정된 코드가 아닙니다.`); 
