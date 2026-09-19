@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuizBell</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%94%3C/text%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ============ 밝고 경쾌한 QuizBell 테마 ============ */
+        :root {
+            --bg: #FFF8EC;
+            --surface: #FFFFFF;
+            --surface-soft: #FFF3D6;
+            --ink: #2E2A3D;
+            --ink-soft: #746C82;
+            --line: #F0E2C0;
+
+            --yellow: #FFC93C;
+            --yellow-deep: #F2A71B;
+            --coral: #FF6B5B;
+            --coral-deep: #E5493A;
+            --blue: #3AAED8;
+            --blue-deep: #2389AC;
+            --green: #2FB380;
+            --green-deep: #1D8F63;
+            --purple: #8C7AE6;
+            --purple-deep: #6B57D6;
+
+            --radius-lg: 28px;
+            --radius-md: 16px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 8% 10%, rgba(255,201,60,.35), transparent 40%),
+                radial-gradient(circle at 92% 16%, rgba(255,107,91,.28), transparent 42%),
+                radial-gradient(circle at 12% 92%, rgba(58,174,216,.25), transparent 45%),
+                radial-gradient(circle at 90% 90%, rgba(140,122,230,.22), transparent 42%),
+                var(--bg);
+            padding: 40px 16px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .page {
+            display: none;
+            background-color: var(--surface);
+            padding: 36px 32px 32px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 45px -18px rgba(46, 42, 61, .28);
+            border: 1px solid var(--line);
+            width: 100%;
+            max-width: 550px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 6px;
+            background: linear-gradient(90deg, var(--yellow), var(--coral), var(--blue), var(--purple));
+        }
+
+        .page.active { display: block; animation: pageIn .35s ease; }
+
+        @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .brand { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 22px; text-align: center; }
+        .brand-badge {
+            width: 56px; height: 56px; border-radius: 18px;
+            background: linear-gradient(145deg, var(--yellow), var(--coral));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; box-shadow: 0 6px 0 var(--coral-deep); margin-bottom: 6px;
+        }
+        .brand h1 { font-size: 30px; margin: 0; }
+        .brand p { margin: 4px 0 0; font-size: 13px; color: var(--ink-soft); }
+
+        h1, h2, h3 { font-family: 'Jua', sans-serif; text-align: center; margin-top: 0; color: var(--ink); font-weight: 400; }
+        h2 { font-size: 22px; margin-bottom: 20px; }
+        h3 { font-size: 17px; }
+        h4 { margin: 6px 0; font-family: 'Noto Sans KR', sans-serif; font-weight: 700; font-size: 14px; }
+        p { line-height: 1.55; }
+
+        .btn {
+            display: block; width: 100%; padding: 14px 18px; border: none; border-radius: 999px;
+            font-family: 'Noto Sans KR', sans-serif; font-size: 15.5px; font-weight: 700; color: #fff;
+            cursor: pointer; margin-top: 12px; transition: transform .12s ease, box-shadow .12s ease;
+        }
+        .btn:active { transform: translateY(3px); }
+
+        .btn-purple { background: var(--purple); box-shadow: 0 4px 0 var(--purple-deep); }
+        .btn-purple:active { box-shadow: 0 1px 0 var(--purple-deep); }
+        .btn-blue { background: var(--blue); box-shadow: 0 4px 0 var(--blue-deep); }
+        .btn-blue:active { box-shadow: 0 1px 0 var(--blue-deep); }
+        .btn-red { background: var(--coral); box-shadow: 0 4px 0 var(--coral-deep); }
+        .btn-red:active { box-shadow: 0 1px 0 var(--coral-deep); }
+        .btn-green { background: var(--green); box-shadow: 0 4px 0 var(--green-deep); }
+        .btn-green:active { box-shadow: 0 1px 0 var(--green-deep); }
+
+        .btn-sm { width: auto; display: inline-block; padding: 8px 14px; font-size: 13px; margin: 0; box-shadow: 0 3px 0 rgba(0,0,0,.15); }
+        .btn-sm:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+
+        .input-group { margin-bottom: 16px; text-align: left; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+        input, select, textarea {
+            width: 100%; padding: 12px 14px; font-family: 'Noto Sans KR', sans-serif; font-size: 15px;
+            background: #FFFDF7; border: 2px solid var(--line); color: var(--ink); border-radius: 12px; outline: none;
+            transition: border-color .15s ease, background .15s ease;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--yellow-deep); background: #fff; }
+        textarea { min-height: 70px; resize: vertical; font-family: 'Noto Sans KR', sans-serif; }
+
+        .tab-buttons { display: flex; gap: 6px; background: var(--surface-soft); padding: 6px; border-radius: 999px; margin-bottom: 24px; }
+        .tab-btn {
+            flex: 1; padding: 10px; background: transparent; color: var(--ink-soft); border: none;
+            border-radius: 999px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-weight: 700;
+            font-size: 14px; transition: all .15s ease;
+        }
+        .tab-btn.active { background: var(--yellow); color: var(--ink); box-shadow: 0 3px 0 var(--yellow-deep); }
+
+        .list-box { background: #FFFDF7; border: 1px solid var(--line); border-radius: 14px; padding: 8px; margin-top: 10px; max-height: 220px; overflow-y: auto; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; font-size: 14px; }
+        .list-item:not(:last-child) { margin-bottom: 4px; }
+        .list-item-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+        .question-card { background: #FFFDF7; border: 1px solid var(--line); padding: 18px; border-radius: 16px; margin-bottom: 16px; border-left: 5px solid var(--yellow); }
+        .q-card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .q-num-badge { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; background: var(--yellow); color: var(--ink); font-weight: 800; font-size: 14px; }
+
+        .option-wrap { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+        .option-wrap input[type="text"] { flex: 1; }
+
+        .ox-btn-group { display: flex; gap: 18px; margin-top: 10px; }
+        .ox-btn-group label { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; cursor: pointer; }
+
+        .quiz-option-btn {
+            background: #FFFDF7; color: var(--ink); border: 2px solid var(--line); padding: 14px 16px;
+            margin-top: 10px; text-align: left; width: 100%; border-radius: 14px; font-size: 15px;
+            font-weight: 600; cursor: pointer; transition: all .15s ease;
+        }
+        .quiz-option-btn:hover { border-color: var(--blue); background: #EAF7FC; }
+
+        .timer-badge { font-size: 26px; font-weight: 800; color: var(--coral-deep); text-align: center; margin: 6px 0 18px; font-family: 'Jua', sans-serif; }
+
+        .rank-item { padding: 14px 16px; margin-bottom: 10px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; }
+        .rank-1 { background: linear-gradient(120deg, #FFD34D, #FFB300); color: #4A3300; font-size: 20px; box-shadow: 0 4px 0 #D99400; }
+        .rank-2 { background: linear-gradient(120deg, #E7E7EF, #C7C7D6); color: #3A3A45; font-size: 18px; box-shadow: 0 4px 0 #A9A9B8; }
+        .rank-3 { background: linear-gradient(120deg, #E7B085, #C98A55); color: #402A16; box-shadow: 0 4px 0 #A96B39; }
+        .rank-normal { background: var(--surface-soft); color: var(--ink); box-shadow: 0 3px 0 var(--line); }
+
+        .divider { border: none; border-top: 2px dashed var(--line); margin: 24px 0; }
+
+        .badge-code-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface-soft); padding: 14px 16px; border-radius: 16px; margin-bottom: 22px; gap: 10px; flex-wrap: wrap; }
+        .badge-code-row strong { font-family: 'Jua', sans-serif; font-size: 18px; color: var(--coral-deep); }
+
+        .status-card { background: var(--surface-soft); padding: 16px; border-radius: 16px; margin-bottom: 16px; }
+
+        .player-chip { background: #fff; border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; margin: 4px; display: inline-block; }
+
+        .link-plain { display: block; text-align: center; margin-top: 14px; color: var(--blue-deep); font-weight: 700; text-decoration: none; font-size: 14px; }
+        .link-plain:hover { text-decoration: underline; }
+
+        @media (max-width: 480px) {
+            .page { padding: 28px 20px 24px; border-radius: 22px; }
+            .brand h1 { font-size: 26px; }
+            body { padding: 22px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="page-login" class="page active">
+        <div class="brand">
+            <div class="brand-badge">🔔</div>
+            <h1>QuizBell</h1>
+            <p>실시간 참여형 퀴즈 플랫폼</p>
+        </div>
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchLoginMode('user')">참가자 로그인</button>
+            <button class="tab-btn" onclick="switchLoginMode('admin')">관리자 로그인</button>
+        </div>
+
+        <div class="input-group"><label>아이디</label><input type="text" id="loginId" placeholder="아이디를 입력하세요"></div>
+        <div class="input-group"><label>비밀번호</label><input type="password" id="loginPw" placeholder="Password를 입력하세요"></div>
+
+        <button class="btn btn-purple" onclick="handleLogin()">로그인</button>
+        <a href="#" id="signupLink" class="link-plain" style="visibility: hidden;" onclick="showPage('page-signup')">관리자 회원가입</a>
+    </div>
+
+    <div id="page-signup" class="page">
+        <h2>🛡️ 관리자 회원가입</h2>
+        <div class="input-group"><label>새 관리자 ID</label><input type="text" id="adminJoinId" placeholder="사용할 아이디"></div>
+        <div class="input-group"><label>비밀번호</label><input type="password" id="adminJoinPw" placeholder="사용할 비밀번호"></div>
+        <button class="btn btn-blue" onclick="handleAdminSignup()">가입하기</button>
+        <a href="#" class="link-plain" onclick="showPage('page-login')">로그인으로 돌아가기</a>
+    </div>
+
+
+    <div id="page-admin-dashboard" class="page">
+        <h2>🛠️ 관리자 모드</h2>
+
+        <div class="badge-code-row">
+            <span>🔐 현재 활성화된 입장 코드 : <strong id="currentCodeDisplay">777999</strong></span>
+            <button class="btn btn-blue btn-sm" onclick="changeQuizCode()">코드 변경</button>
+        </div>
+
+        <h3>참가자 그룹 관리</h3>
+        <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+            <input type="text" id="groupInput" placeholder="그룹 이름을 입력하세요">
+            <button class="btn btn-blue btn-sm" onclick="createGroup()">그룹 생성</button>
+        </div>
+        <div id="groupList" class="list-box"></div>
+
+        <div id="userManageSection" style="display:none; margin-top: 14px; background:var(--surface-soft); padding:12px; border-radius:14px;">
+            <h4 id="currentManageGroupTitle">그룹 계정 목록</h4>
+            <div id="userList" class="list-box" style="max-height: 130px;"></div>
+        </div>
+
+        <hr class="divider">
+        <h3>생성된 퀴즈 목록</h3>
+        <div id="quizList" class="list-box" style="margin-bottom: 16px;"></div>
+
+        <button class="btn btn-green" onclick="openQuizMaker()">📝 새 퀴즈 만들기</button>
+        <button class="btn btn-red" onclick="showPage('page-login')">로그아웃</button>
+
+        <button class="btn" style="background:#fff; color:var(--ink-soft); border:2px dashed var(--line); box-shadow:none; font-size:13px; margin-top:24px;" onclick="deleteAdminAccount()">⚠️ 관리자 계정 탈퇴 (데이터 전체 삭제)</button>
+    </div>
+
+
+    <div id="page-quiz-maker" class="page" style="max-width: 600px;">
+        <h2 id="quizMakerHeading">📝 퀴즈 만들기</h2>
+        <div class="input-group"><label>퀴즈 제목</label><input type="text" id="quizTitle" placeholder="예: 수학 퀴즈"></div>
+        <div class="input-group"><label>퀴즈 설명</label><textarea id="quizDesc" placeholder="설명을 적어주세요"></textarea></div>
+
+        <div class="input-group">
+            <label>제한 시간 설정</label>
+            <select id="timeSetting" onchange="toggleTimeInput()">
+                <option value="X">제한시간 없음 (X)</option>
+                <option value="O">제한시간 설정 (O)</option>
+            </select>
+            <input type="number" id="timeLimitInput" placeholder="초 단위 입력" style="display:none; margin-top:10px;">
+        </div>
+
+        <hr class="divider">
+        <h3>문제 추가</h3>
+        <div id="questionArea"></div>
+        <button class="btn btn-blue btn-sm" style="margin-bottom: 20px;" onclick="addQuestionField()">+ 문제 추가하기</button>
+
+        <button class="btn btn-green" onclick="saveQuiz()">💾 퀴즈 저장하기</button>
+        <button class="btn btn-red" onclick="cancelQuizMaker()">취소</button>
+    </div>
+
+
+    <div id="page-admin-lobby" class="page">
+        <h2>👑 퀴즈 컨트롤 타워</h2>
+        <div class="badge-code-row" style="justify-content:center;">
+            <span>입장 코드 : <strong id="lobbyCodeDisplay">777999</strong></span>
+        </div>
+
+        <div class="status-card">
+            <h4>현재 대기 중인 참가자 목록 (<span id="playerCount">0</span>명)</h4>
+            <div id="lobbyPlayerList" style="display:flex; gap:6px; flex-wrap:wrap; min-height:44px; padding:10px; background:#fff; border-radius:12px; border:1px solid var(--line);"></div>
+        </div>
+
+        <div class="status-card">
+            <h4>📊 실시간 진행 상황 현황</h4>
+            <p id="completionStatusText" style="font-size: 15px; text-align: center; font-weight: 700; color: var(--blue-deep); margin: 6px 0 0;">참가자들이 입장하길 기다리는 중...</p>
+            <h3 id="allFinishedAlert" style="color:var(--green-deep); text-align:center; display:none; margin-top:10px;">🎉 모든 참가자가 문제를 풀었습니다!</h3>
+        </div>
+
+        <button class="btn btn-green" id="gameStartSignalBtn" onclick="sendSignalStartGame()">🚀 참가자 동시 시작!</button>
+        <button class="btn btn-purple" id="viewRankBtn" style="display:none;" onclick="calculateAndShowRank()">🏆 5등 ~ 1등 순위 보기</button>
+        <button class="btn btn-red" onclick="stopQuizSession()">퀴즈 세션 종료 및 폐쇄</button>
+    </div>
+
+
+    <div id="page-user-main" class="page">
+        <h2>👋 참가자 메인 화면</h2>
+        <div class="input-group">
+            <label>입장 코드 입력</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="codeInput" placeholder="지정된 코드 입력">
+                <button class="btn btn-blue btn-sm" onclick="checkCode()">확인</button>
+            </div>
+        </div>
+        <button class="btn btn-red" onclick="showPage('page-login')">로그아웃</button>
+    </div>
+
+    <div id="page-user-wait" class="page">
+        <h2>🎮 퀴즈 대기방</h2>
+        <div class="input-group"><label>사용할 닉네임</label><input type="text" id="userNickname" placeholder="닉네임을 입력하세요"></div>
+        <button class="btn btn-blue" id="joinLobbyBtn" onclick="joinLobby()">대기방 입장하기</button>
+
+        <div class="status-card" style="text-align:center; margin-top:20px;">
+            <p id="userWaitStatus" style="color:var(--coral-deep); font-weight:700; margin:0;">관리자가 게임을 시작할 때까지 잠시 대기해주세요...</p>
+        </div>
+    </div>
+
+
+    <div id="page-quiz-play" class="page">
+        <h2 id="playQuizTitle">🎯 Quiz 플레이</h2>
+        <div id="quizTimer" class="timer-badge">제한시간 가동</div>
+
+        <div class="status-card">
+            <h3 id="playQuestionNum" style="text-align:left; color:var(--coral-deep); margin-bottom:8px;">1번 문제</h3>
+            <p id="playQuestionText" style="font-size:18px; font-weight:700; margin:0;">문제가 여기에 표시됩니다.</p>
+        </div>
+
+        <div id="playInteractionArea"></div>
+        <button class="btn btn-blue" id="nextQuestionBtn" style="margin-top:20px; display:none;" onclick="nextPlayQuestion()">다음 문제 넘어가기 ➡️</button>
+    </div>
+
+
+    <div id="page-quiz-result" class="page">
+        <h2 id="resultHeaderTitle">🏁 퀴즈 스탠딩 리포트</h2>
+
+        <div id="singleUserResultArea" style="text-align: center; margin: 20px 0; display:none;">
+            <p style="font-size: 16px; color: var(--ink-soft);">나의 점수</p>
+            <h1 id="resultScoreText" style="font-size: 46px; color:var(--green-deep);">0 / 0</h1>
+            <p style="color:var(--coral-deep); font-weight:700;">관리자 화면에서 순위 집계 결과를 확인하세요!</p>
+        </div>
+
+        <div id="rankBoardArea" style="display:none;">
+            <h3 style="color:var(--yellow-deep); margin-bottom:16px;">🏆 TOP 5 파이널 랭킹</h3>
+            <div id="rankListContainer"></div>
+        </div>
+
+        <button class="btn btn-purple" onclick="exitQuizGame()">처음 화면으로 돌아가기</button>
+    </div>
+
+
+    <script>
+        let currentLoginMode = 'user';
+        let questionCount = 0;
+        let selectedGroupIndexForUserManage = null;
+        let editingQuizIndex = null;
+
+        let activeQuizData = null;
+        let currentQuestionIndex = 0;
+        let userScore = 0;
+        let lobbyUpdateInterval = null;
+        let myNickname = "";
+
+        let globalQuizCode = localStorage.getItem('globalQuizCode') || '777999';
+        let adminAccount = JSON.parse(localStorage.getItem('adminAccount')) || { id: 'admin', pw: '1234' };
+        let groups = JSON.parse(localStorage.getItem('groups')) || [];
+        let quizzes = JSON.parse(localStorage.getItem('quizzes')) || [];
+
+        function escapeHtml(str) {
+            if (str === undefined || str === null) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            if(pageId === 'page-admin-dashboard') {
+                document.getElementById('currentCodeDisplay').innerText = globalQuizCode;
+                renderGroups();
+                renderQuizzes();
+            }
+        }
+
+        function changeQuizCode() {
+            const newCode = prompt("새로 사용할 퀴즈 입장 코드를 입력해줘 (예: 1234):", globalQuizCode);
+            if(!newCode) return;
+            globalQuizCode = newCode.trim();
+            localStorage.setItem('globalQuizCode', globalQuizCode);
+            document.getElementById('currentCodeDisplay').innerText = globalQuizCode;
+            alert(`입장 코드가 [${globalQuizCode}]로 정상 변경되었어!`);
+        }
+
+        function deleteAdminAccount() {
+            if(confirm("⚠️ 정말로 탈퇴하실건가요? 탈퇴하면 퀴즈, 그룹, 참가자 계정이 전부 사라집니다.")) {
+                if(confirm("마지막 확인! 정말 모든 데이터를 삭제하고 탈퇴하겠습니까?")) {
+                    localStorage.clear();
+                    adminAccount = { id: 'admin', pw: '1234' };
+                    groups = [];
+                    quizzes = [];
+                    globalQuizCode = '777999';
+                    alert("관리자 회원 탈퇴 및 데이터 리셋이 완료되었습니다.");
+                    showPage('page-login');
+                    location.reload();
+                }
+            }
+        }
+
+        function deleteQuiz(index) {
+            if(confirm(`"${quizzes[index].title}" 퀴즈를 삭제할까요? 복구는 불가능합니다.`)) {
+                quizzes.splice(index, 1);
+                localStorage.setItem('quizzes', JSON.stringify(quizzes));
+                renderQuizzes();
+            }
+        }
+
+        function switchLoginMode(mode) {
+            currentLoginMode = mode;
+            const buttons = document.querySelectorAll('.tab-btn');
+            const idInput = document.getElementById('loginId');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            if (mode === 'user') {
+                buttons[0].classList.add('active'); document.getElementById('signupLink').style.visibility = 'hidden';
+                idInput.placeholder = "참가자 ID를 입력하세요";
+            } else {
+                buttons[1].classList.add('active'); document.getElementById('signupLink').style.visibility = 'visible';
+                idInput.placeholder = "관리자 ID를 입력하세요";
+            }
+        }
+
+        function handleAdminSignup() {
+            const id = document.getElementById('adminJoinId').value;
+            const pw = document.getElementById('adminJoinPw').value;
+            if(!id || !pw) return alert('입력 누락!');
+            adminAccount = { id: id, pw: pw };
+            localStorage.setItem('adminAccount', JSON.stringify(adminAccount));
+            alert('관리자 가입 완료!'); showPage('page-login');
+        }
+
+        function handleLogin() {
+            const id = document.getElementById('loginId').value;
+            const pw = document.getElementById('loginPw').value;
+            if(currentLoginMode === 'admin') {
+                if(id === adminAccount.id && pw === adminAccount.pw) { showPage('page-admin-dashboard'); }
+                else { alert('관리자 정보 틀림!'); }
+            } else {
+                let userFound = false;
+                for (let group of groups) {
+                    if (group.users) {
+                        let match = group.users.find(u => u.id === id && u.pw === pw);
+                        if (match) { userFound = true; break; }
+                    }
+                }
+                if (userFound) { showPage('page-user-main'); }
+                else { alert('참가자 ID/PW 오류!'); }
+            }
+        }
+
+        function createGroup() {
+            const name = document.getElementById('groupInput').value; if(!name) return;
+            groups.push({ name: name, users: [] }); localStorage.setItem('groups', JSON.stringify(groups));
+            document.getElementById('groupInput').value = ''; renderGroups();
+        }
+
+        function renderGroups() {
+            const list = document.getElementById('groupList'); list.innerHTML = '';
+            if(groups.length === 0) {
+                list.innerHTML = '<p style="color:var(--ink-soft); text-align:center; padding:10px; margin:0;">생성된 그룹이 없습니다.</p>';
+                return;
+            }
+            groups.forEach((group, index) => {
+                list.innerHTML += `
+                    <div class="list-item">
+                        <span>📂 ${group.name} (${group.users ? group.users.length : 0}명)</span>
+                        <div class="list-item-actions">
+                            <button class="btn btn-purple btn-sm" onclick="addParticipantAccount(${index})">+ 계정</button>
+                            <button class="btn btn-blue btn-sm" onclick="toggleUserManage(${index})">관리</button>
+                            <button class="btn btn-red btn-sm" onclick="deleteGroup(${index})">삭제</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function addParticipantAccount(groupIndex) {
+            const userId = prompt("생성할 참가자 ID:"); if(!userId) return;
+            const userPw = prompt("생성할 참가자 PW:"); if(!userPw) return;
+            if(!groups[groupIndex].users) groups[groupIndex].users = [];
+            groups[groupIndex].users.push({ id: userId, pw: userPw });
+            localStorage.setItem('groups', JSON.stringify(groups)); renderGroups();
+            if(selectedGroupIndexForUserManage === groupIndex) renderUserList(groupIndex);
+        }
+
+        function toggleUserManage(groupIndex) {
+            const section = document.getElementById('userManageSection');
+            if(section.style.display === 'block' && selectedGroupIndexForUserManage === groupIndex) { section.style.display = 'none'; }
+            else {
+                selectedGroupIndexForUserManage = groupIndex; section.style.display = 'block';
+                document.getElementById('currentManageGroupTitle').innerText = `[${groups[groupIndex].name}] 계정 목록`;
+                renderUserList(groupIndex);
+            }
+        }
+
+        function renderUserList(groupIndex) {
+            const list = document.getElementById('userList'); list.innerHTML = '';
+            const users = groups[groupIndex].users || [];
+            users.forEach((user, uIndex) => {
+                list.innerHTML += `
+                    <div class="list-item" style="background:#fff;">
+                        <span>👤 ID: <strong>${user.id}</strong> (PW: ${user.pw})</span>
+                        <button class="btn btn-red btn-sm" onclick="deleteSingleUser(${groupIndex}, ${uIndex})">지우기</button>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteSingleUser(gIdx, uIdx) {
+            if(confirm("계정을 삭제할까요?")) { groups[gIdx].users.splice(uIdx, 1); localStorage.setItem('groups', JSON.stringify(groups)); renderGroups(); renderUserList(gIdx); }
+        }
+
+        function deleteGroup(index) {
+            if(confirm("그룹을 지우면 참가자도 다 삭제됩니다.")) { groups.splice(index, 1); localStorage.setItem('groups', JSON.stringify(groups)); renderGroups(); }
+        }
+
+        function renderQuizzes() {
+            const list = document.getElementById('quizList'); list.innerHTML = '';
+            if(quizzes.length === 0) {
+                list.innerHTML = '<p style="color:var(--ink-soft); text-align: center; padding:10px; margin:0;">생성된 퀴즈가 없습니다.</p>';
+                return;
+            }
+            quizzes.forEach((quiz, index) => {
+                list.innerHTML += `
+                    <div class="list-item">
+                        <span>📝 <strong>${quiz.title}</strong> (${quiz.questions.length}문제)</span>
+                        <div class="list-item-actions">
+                            <button class="btn btn-green btn-sm" onclick="openAdminLobby(${index})">시작</button>
+                            <button class="btn btn-blue btn-sm" onclick="openQuizMaker(${index})">수정</button>
+                            <button class="btn btn-red btn-sm" onclick="deleteQuiz(${index})">삭제</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openAdminLobby(quizIndex) {
+            activeQuizData = quizzes[quizIndex];
+
+            let sessionState = {
+                title: activeQuizData.title,
+                status: 'waiting',
+                players: [],
+                totalQuestions: activeQuizData.questions.length
+            };
+            localStorage.setItem('quizSession', JSON.stringify(sessionState));
+            localStorage.setItem('activeQuizTemplate', JSON.stringify(activeQuizData));
+
+            const lobbyHeader = document.querySelector('#page-admin-lobby h2');
+            if(lobbyHeader) {
+                lobbyHeader.innerText = `👑 ${activeQuizData.title} 관제실`;
+            }
+
+            document.getElementById('lobbyCodeDisplay').innerText = globalQuizCode;
+            document.getElementById('allFinishedAlert').style.display = 'none';
+            document.getElementById('viewRankBtn').style.display = 'none';
+            document.getElementById('gameStartSignalBtn').style.display = 'block';
+
+            showPage('page-admin-lobby');
+
+            clearInterval(lobbyUpdateInterval);
+            lobbyUpdateInterval = setInterval(updateAdminLobbyStatus, 500);
+        }
+
+        function updateAdminLobbyStatus() {
+            let session = JSON.parse(localStorage.getItem('quizSession'));
+            if(!session) return;
+
+            const listContainer = document.getElementById('lobbyPlayerList');
+            if(!listContainer) return;
+
+            listContainer.innerHTML = '';
+            document.getElementById('playerCount').innerText = session.players.length;
+
+            session.players.forEach(p => {
+                let statusBadge = p.finished ? '✅ 완료' : '📝 풀고있음';
+                if(session.status === 'waiting') statusBadge = '💤 대기';
+                listContainer.innerHTML += `<span class="player-chip">${p.nickname} · ${statusBadge}</span>`;
+            });
+
+            if(session.status === 'playing') {
+                let finishedCount = session.players.filter(p => p.finished).length;
+                document.getElementById('completionStatusText').innerText = `진행 현황: 총 ${session.players.length}명 중 ${finishedCount}명 완료`;
+
+                if(session.players.length > 0 && finishedCount === session.players.length) {
+                    document.getElementById('allFinishedAlert').style.display = 'block';
+                    document.getElementById('viewRankBtn').style.display = 'block';
+                    document.getElementById('gameStartSignalBtn').style.display = 'none';
+                }
+            }
+        }
+
+        function sendSignalStartGame() {
+            let session = JSON.parse(localStorage.getItem('quizSession'));
+            if(!session || session.players.length === 0) return alert('아직 대기방에 들어온 참가자가 없습니다.');
+
+            session.status = 'playing';
+            localStorage.setItem('quizSession', JSON.stringify(session));
+            document.getElementById('completionStatusText').innerText = '게임 스타트! 참가자들이 문제를 풀고 있습니다.';
+            document.getElementById('gameStartSignalBtn').style.display = 'none';
+        }
+
+        function stopQuizSession() {
+            clearInterval(lobbyUpdateInterval);
+            localStorage.removeItem('quizSession');
+            showPage('page-admin-dashboard');
+        }
+
+        function checkCode() {
+            const code = document.getElementById('codeInput').value.trim();
+            let session = JSON.parse(localStorage.getItem('quizSession'));
+
+            if(code === globalQuizCode) {
+                if(!session) return alert('관리자가 퀴즈를 아직 시작(활성화)하지 않았습니다.');
+                showPage('page-user-wait');
+            } else {
+                alert(`코드 번호 오류! 현재 설정된 코드가 아닙니다.`);
+            }
+        }
+
+        function joinLobby() {
+            const nick = document.getElementById('userNickname').value.trim();
+            if(!nick) return alert('닉네임을 적어줘!');
+            myNickname = nick;
+
+            let session = JSON.parse(localStorage.getItem('quizSession'));
+            if(!session) return alert('진행중인 세션이 없습니다.');
+
+            if(session.players.some(p => p.nickname === nick)) return alert('이미 사용중인 닉네임이야.');
+
+            session.players.push({ nickname: nick, score: 0, finished: false });
+            localStorage.setItem('quizSession', JSON.stringify(session));
+
+            document.getElementById('joinLobbyBtn').style.display = 'none';
+            document.getElementById('userWaitStatus').innerText = `[${nick}]님 등록 완료! 대기하세요.`;
+
+            clearInterval(lobbyUpdateInterval);
+            lobbyUpdateInterval = setInterval(watchGameStartSignal, 500);
+        }
+
+        function watchGameStartSignal() {
+            let session = JSON.parse(localStorage.getItem('quizSession'));
+            if(!session) { clearInterval(lobbyUpdateInterval); return; }
+
+            if(session.status === 'playing') {
+                clearInterval(lobbyUpdateInterval);
+                activeQuizData = JSON.parse(localStorage.getItem('activeQuizTemplate'));
+                currentQuestionIndex = 0;
+                userScore = 0;
+
+                document.getElementById('playQuizTitle').innerText = `🔔 플레이: ${session.title}`;
+                showPage('page-quiz-play');
+                loadPlayQuestion();
+            }
+        }
+
+        function loadPlayQuestion() {
+            const qData = activeQuizData.questions[currentQuestionIndex];
+            document.getElementById('playQuestionNum').innerText = `${currentQuestionIndex + 1}번 문제 (${qData.type})`;
+            document.getElementById('playQuestionText').innerText = qData.text;
+
+            const area = document.getElementById('playInteractionArea'); area.innerHTML = '';
+            document.getElementById('nextQuestionBtn').style.display = 'none';
+            document.getElementById('quizTimer').innerText = `⏱️ 문제 풀이 중`;
+
+            if(qData.type === '객관식') {
+                qData.options.forEach((opt, idx) => {
+                    area.innerHTML += `<button class="quiz-option-btn" onclick="submitUserAnswer('${idx + 1}')">${idx + 1}. ${opt}</button>`;
+                });
+            } else if(qData.type === '주관식') {
+                area.innerHTML = `
+                    <div class="input-group">
+                        <input type="text" id="userSubAnswer" placeholder="정답 입력">
+                        <button class="btn btn-blue" style="margin-top:10px;" onclick="submitUserAnswer(document.getElementById('userSubAnswer').value)">제출</button>
+                    </div>
+                `;
+            } else if(qData.type === 'OX') {
+                area.innerHTML = `
+                    <div style="display:flex; gap:20px; justify-content:center; margin-top:15px;">
+                        <button class="btn btn-green" style="font-size:32px; width:100px; height:100px; border-radius:50%;" onclick="submitUserAnswer('O')">O</button>
+                        <button class="btn btn-red" style="font-size:32px; width:100px; height:100px; border-radius:50%;" onclick="submitUserAnswer('X')">X</button>
+                    </div>
+                `;
+            }
+        }
+
+        function submitUserAnswer(val) {
+            const qData = activeQuizData.questions[currentQuestionIndex];
+            let isCorrect = false;
+
+            if(qData.type === '주관식') {
+                let correctList = qData.answer.split(',').map(item => item.trim());
+                if(correctList.includes(val.trim())) isCorrect = true;
+            } else {
+                if(qData.answer.trim() === val.trim()) isCorrect = true;
+            }
+
+            if(isCorrect) { userScore++; alert('🎉 정답!'); } else { alert('❌ 오답!'); }
+
+            document.getElementById('playInteractionArea').innerHTML = '<p style="text-align:center; color:var(--ink-soft);">제출 완료. 다음 버튼을 누르세요.</p>';
+            document.getElementById('nextQuestionBtn').style.display = 'block';
+        }
+
+        function nextPlayQuestion() {
+            currentQuestionIndex++;
+            if(currentQuestionIndex < activeQuizData.questions.length) {
+                loadPlayQuestion();
+            } else {
+                let session = JSON.parse(localStorage.getItem('quizSession'));
+                if(session) {
+                    let myIdx = session.players.findIndex(p => p.nickname === myNickname);
+                    if(myIdx !== -1) {
+                        session.players[myIdx].score = userScore;
+                        session.players[myIdx].finished = true;
+                    }
+                    localStorage.setItem('quizSession', JSON.stringify(session));
+                }
+
+                document.getElementById('resultHeaderTitle').innerText = "🏁 퀴즈 결과";
+                document.getElementById('singleUserResultArea').style.display = 'block';
+                document.getElementById('rankBoardArea').style.display = 'none';
+                document.getElementById('resultScoreText').innerText = `${userScore} / ${activeQuizData.questions.length}`;
+                showPage('page-quiz-result');
+            }
+        }
+
+        function calculateAndShowRank() {
+            clearInterval(lobbyUpdateInterval);
+            let session = JSON.parse(localStorage.getItem('quizSession'));
+            if(!session) return;
+
+            let sortedPlayers = [...session.players].sort((a, b) => b.score - a.score);
+
+            document.getElementById('resultHeaderTitle').innerText = "🏆 전체 실시간 전광판";
+            document.getElementById('singleUserResultArea').style.display = 'none';
+            document.getElementById('rankBoardArea').style.display = 'block';
+
+            const container = document.getElementById('rankListContainer');
+            container.innerHTML = '';
+
+            let topFive = sortedPlayers.slice(0, 5);
+
+            topFive.forEach((player, index) => {
+                let rankNum = index + 1;
+                let rankClass = 'rank-normal';
+                let medal = '🏅';
+
+                if(rankNum === 1) { rankClass = 'rank-1'; medal = '🥇 1등'; }
+                else if(rankNum === 2) { rankClass = 'rank-2'; medal = '🥈 2등'; }
+                else if(rankNum === 3) { rankClass = 'rank-3'; medal = '🥉 3등'; }
+                else { medal = `🎖️ ${rankNum}등`; }
+
+                container.innerHTML += `
+                    <div class="rank-item ${rankClass}">
+                        <span>${medal} : ${player.nickname}</span>
+                        <span>${player.score}점</span>
+                    </div>
+                `;
+            });
+
+            session.status = 'finished';
+            localStorage.setItem('quizSession', JSON.stringify(session));
+            showPage('page-quiz-result');
+        }
+
+        /* 🛠️ 각자의 대시보드로 복귀하는 스마트 백트래킹 시스템 */
+        function exitQuizGame() {
+            clearInterval(lobbyUpdateInterval);
+
+            if (currentLoginMode === 'admin') {
+                localStorage.removeItem('quizSession');
+                showPage('page-admin-dashboard');
+            } else {
+                document.getElementById('joinLobbyBtn').style.display = 'block';
+                document.getElementById('userWaitStatus').innerText = '관리자가 게임을 시작할 때까지 잠시 대기해주세요...';
+                document.getElementById('userNickname').value = '';
+                showPage('page-user-main');
+            }
+        }
+
+        /* 📝 퀴즈 만들기 / 수정하기 (index를 넘기면 수정 모드) */
+        function openQuizMaker(index = null) {
+            editingQuizIndex = index;
+            document.getElementById('quizTitle').value = '';
+            document.getElementById('quizDesc').value = '';
+            document.getElementById('questionArea').innerHTML = '';
+            questionCount = 0;
+            document.getElementById('timeSetting').value = 'X';
+            document.getElementById('timeLimitInput').value = '';
+            toggleTimeInput();
+
+            const heading = document.getElementById('quizMakerHeading');
+
+            if (index !== null && quizzes[index]) {
+                const quiz = quizzes[index];
+                document.getElementById('quizTitle').value = quiz.title;
+                document.getElementById('quizDesc').value = quiz.desc || '';
+                document.getElementById('timeSetting').value = quiz.time || 'X';
+                document.getElementById('timeLimitInput').value = quiz.timeLimit || '';
+                toggleTimeInput();
+                quiz.questions.forEach(q => addQuestionField(q));
+                if(heading) heading.innerText = '✏️ 퀴즈 수정하기';
+            } else {
+                addQuestionField();
+                if(heading) heading.innerText = '📝 퀴즈 만들기';
+            }
+
+            showPage('page-quiz-maker');
+        }
+
+        function cancelQuizMaker() {
+            editingQuizIndex = null;
+            showPage('page-admin-dashboard');
+        }
+
+        function toggleTimeInput() {
+            const setting = document.getElementById('timeSetting').value;
+            document.getElementById('timeLimitInput').style.display = setting === 'O' ? 'block' : 'none';
+        }
+
+        function addQuestionField(existingQ = null) {
+            questionCount++;
+            const num = questionCount;
+            const area = document.getElementById('questionArea');
+            const card = document.createElement('div');
+            card.className = 'question-card'; card.id = `q-card-${num}`;
+
+            const qText = existingQ ? existingQ.text : '';
+            const qType = existingQ ? existingQ.type : '객관식';
+
+            card.innerHTML = `
+                <div class="q-card-head">
+                    <span class="q-num-badge">${num}</span>
+                    <button class="btn btn-red btn-sm" onclick="this.closest('.question-card').remove()">문제 삭제</button>
+                </div>
+                <div class="input-group"><label>문제 내용</label><input type="text" class="q-text" placeholder="문제를 입력하세요" value="${escapeHtml(qText)}"></div>
+                <div class="input-group">
+                    <label>문제 형식</label>
+                    <select class="q-type" onchange="changeQuestionType(${num})">
+                        <option value="객관식" ${qType === '객관식' ? 'selected' : ''}>객관식</option><option value="주관식" ${qType === '주관식' ? 'selected' : ''}>주관식</option><option value="OX" ${qType === 'OX' ? 'selected' : ''}>OX 퀴즈</option>
+                    </select>
+                </div>
+                <div class="q-detail-area" id="q-detail-${num}"></div>
+            `;
+            area.appendChild(card);
+            renderQuestionDetail(num, qType, existingQ);
+        }
+
+        function renderQuestionDetail(qNum, type, existingQ) {
+            const detailArea = document.getElementById(`q-detail-${qNum}`);
+            if(type === '객관식') {
+                const opts = (existingQ && existingQ.type === '객관식' && existingQ.options && existingQ.options.length) ? existingQ.options : [''];
+                let optsHtml = '';
+                opts.forEach((opt, i) => {
+                    optsHtml += `<div class="option-wrap"><span>${i + 1}.</span><input type="text" class="opt-input" placeholder="보기" value="${escapeHtml(opt)}"><button class="btn btn-red btn-sm" onclick="this.parentElement.remove()">X</button></div>`;
+                });
+                const ansVal = (existingQ && existingQ.type === '객관식') ? existingQ.answer : '';
+                detailArea.innerHTML = `
+                    <label>보기 문항 설정</label><div class="options-box">${optsHtml}</div>
+                    <button class="btn btn-purple btn-sm" style="margin-top:5px; padding:3px 8px; font-size:12px;" onclick="addOption(${qNum})">+ 보기 추가</button>
+                    <div class="input-group" style="margin-top:10px;"><label>정답 번호</label><input type="text" class="q-ans-obj" placeholder="예: 1" value="${escapeHtml(ansVal)}"></div>`;
+            } else if(type === '주관식') {
+                const ansVal = (existingQ && existingQ.type === '주관식') ? existingQ.answer : '';
+                detailArea.innerHTML = `<div class="input-group"><label>주관식 정답 (쉼표 구분)</label><input type="text" class="q-ans-sub" placeholder="예: 한국, 대한민국" value="${escapeHtml(ansVal)}"></div>`;
+            } else if(type === 'OX') {
+                const ansVal = (existingQ && existingQ.type === 'OX') ? existingQ.answer : 'O';
+                detailArea.innerHTML = `<label>OX 정답</label><div class="ox-btn-group"><label><input type="radio" name="ox-ans-${qNum}" value="O" ${ansVal === 'O' ? 'checked' : ''}> O</label><label><input type="radio" name="ox-ans-${qNum}" value="X" ${ansVal === 'X' ? 'checked' : ''}> X</label></div>`;
+            }
+        }
+
+        function changeQuestionType(qNum) {
+            const type = document.querySelector(`#q-card-${qNum} .q-type`).value;
+            renderQuestionDetail(qNum, type, null);
+        }
+
+        function addOption(qNum) {
+            const box = document.querySelector(`#q-detail-${qNum} .options-box`); const currentCount = box.children.length + 1; const wrap = document.createElement('div'); wrap.className = 'option-wrap';
+            wrap.innerHTML = `<span>${currentCount}.</span><input type="text" class="opt-input" placeholder="보기"><button class="btn btn-red btn-sm" onclick="this.parentElement.remove()">X</button>`; box.appendChild(wrap);
+        }
+
+        function saveQuiz() {
+            const title = document.getElementById('quizTitle').value; const desc = document.getElementById('quizDesc').value; if(!title) return alert('퀴즈 제목 필수!');
+            let savedQuestions = [];
+            for(let i=1; i<=questionCount; i++) {
+                const card = document.getElementById(`q-card-${i}`);
+                if(card) {
+                    const text = card.querySelector('.q-text').value; const type = card.querySelector('.q-type').value; let ans = ''; let opts = [];
+                    if(type === '객관식') { ans = card.querySelector('.q-ans-obj').value; card.querySelectorAll('.opt-input').forEach(input => opts.push(input.value)); }
+                    else if(type === '주관식') { ans = card.querySelector('.q-ans-sub').value; }
+                    else if(type === 'OX') { ans = card.querySelector(`input[name="ox-ans-${i}"]:checked`).value; }
+                    savedQuestions.push({ num: i, text: text, type: type, answer: ans, options: opts });
+                }
+            }
+            const quizData = { title: title, desc: desc, time: document.getElementById('timeSetting').value, timeLimit: document.getElementById('timeLimitInput').value, questions: savedQuestions };
+
+            if(editingQuizIndex !== null && quizzes[editingQuizIndex]) {
+                quizzes[editingQuizIndex] = quizData;
+                alert('퀴즈 수정 완료!');
+            } else {
+                quizzes.push(quizData);
+                alert('퀴즈 저장 완료!');
+            }
+            localStorage.setItem('quizzes', JSON.stringify(quizzes));
+            editingQuizIndex = null;
+            showPage('page-admin-dashboard');
+        }
+
+        window.onload = () => { if(localStorage.getItem('adminAccount')) { renderGroups(); renderQuizzes(); } }
+    </script>
+</body>
+</html>
